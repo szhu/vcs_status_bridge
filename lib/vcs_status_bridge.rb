@@ -1,0 +1,1 @@
+require_relative 'vcs_status_bridge/circle_to_github'

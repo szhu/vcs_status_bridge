@@ -1,0 +1,49 @@
+#!/usr/bin/env ruby
+# The command line YAML Tablerize parser.
+
+def usage
+  $stderr.puts "usage: #{$PROGRAM_NAME} <repo_name> load_check_head"
+  $stderr.puts "       #{$PROGRAM_NAME} <repo_name> save_check_head <check_head>"
+  $stderr.puts "       #{$PROGRAM_NAME} <repo_name> push_statuses_after_check_head"
+  $stderr.puts "       #{$PROGRAM_NAME} <repo_name> recent_statuses [offset [limit]]"
+  exit 1
+end
+
+usage if ARGV.empty?
+
+THIS_FILE = File.symlink?(__FILE__) ? File.readlink(__FILE__) : __FILE__
+begin
+  require File.expand_path(File.dirname(THIS_FILE) + '/../lib/vcs_status_bridge')
+rescue LoadError
+  require 'vcs_status_bridge'
+end
+
+case ARGV[1]
+when 'recent_statuses'
+  require 'pp'
+  circle = VcsStatusBridge::Circle::Project.new(ARGV[0])
+  opts = {}
+  opts[:offset] = ARGV[2] unless ARGV[2].nil?
+  opts[:limit]  = ARGV[3] unless ARGV[3].nil?
+  pp circle.recent_statuses(opts)
+
+when 'load_check_head'
+  circle_to_github = VcsStatusBridge::CircleToGithub.new(ARGV[0])
+  puts circle_to_github.load_check_head
+
+when 'save_check_head'
+  circle_to_github = VcsStatusBridge::CircleToGithub.new(ARGV[0])
+  begin
+    Integer(ARGV[2])
+  rescue TypeError
+    usage
+  end
+  circle_to_github.save_check_head(ARGV[2])
+
+when 'push_statuses_after_check_head'
+  circle_to_github = VcsStatusBridge::CircleToGithub.new(ARGV[0])
+  circle_to_github.push_statuses_after_check_head
+
+else
+  usage
+end

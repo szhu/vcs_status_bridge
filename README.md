@@ -1,42 +1,42 @@
-circle-github-status-bridge
-===========================
+vcs_status_bridge
+=================
 
-This thing can pull build statuses from Circle CI and push them onto GitHub. Cool, right?
+This thing can pull build statuses from [Circle CI](http://circleci.com/) and push them onto GitHub. This gem lays out the framework to extend this functionality to other CI and VCS providers as well.
 
-This script is meant to be run periodically by something like cron, launchd, or jenkins.
+The gem was created because for some time, Circle CI [didn't allow fine-grained permissions](https://circleci.com/docs/github-permissions) and required repo write access just to post statuses. The status bridge solved the problem by using GitHub personal access tokens that allowed only updating statuses.
+
+Circle CI now supports pushing statuses to GitHub with a minimal set of permissions, so this project is obsolete. However, it can be modified to bridge other CI and VCS systems.
 
 ## Usage
 
-Do this once:
+**Setting it up**
 
-```bash
-export STATUS_BRIDGE_CIRCLECI_API_TOKEN=1234567890123456789012345678901234567890
-export STATUS_BRIDGE_GITHUB_API_TOKEN=1234567890123456789012345678901234567890
+```sh
 # set the earliest build that should be checked
-python . set_check_head IFTTT/ifttt_front_end 12345
+bin/circle-to-github-status IFTTT/ifttt_front_end set_check_head 12345
 ```
 
-And run this periodically:
+**Using it**
 
-```bash
+```sh
 export STATUS_BRIDGE_CIRCLECI_API_TOKEN=1234567890123456789012345678901234567890
 export STATUS_BRIDGE_GITHUB_API_TOKEN=1234567890123456789012345678901234567890
-python . push_all_statuses_after_check_head IFTTT/ifttt_front_end
+bin/circle-to-github-status IFTTT/ifttt_front_end push_statuses_after_check_head
 ```
 
-To make these commands one-liners, use `env`.
+If you feel secure enough about it, you can put the two `export` lines in `.bashrc`.
 
-## About the directory format of this project
+**This thing is a RubyGem+executable too!**
 
-If the Python interpreter is told to "run" a directory or zip file, it will run the enclosed `__main__.py` file. Therefore this project can be run in a few ways:
+```sh
+make  # to build the gem
+make install  # to install the gem
+make uninstall  # to remove the gem
+circle-to-github-status  # to do stuff
+```
 
-- `/path/to/circle-github-status-bridge $ python . ...`
-- `/path/to $ python circle-github-status-bridge ...`
-- `/path/to $ python circle-github-status-bridge.zip ...`
-
-The last variation allows the entire project to be distributed as a zip file.
 
 ## About the output format of the script
 
-- Progress and errors should be sent to `stderr` (`print >> stderr, 'message'`)
-- Return value-like output should be sent to `stdout`  (`print 'message'`)
+- Progress and errors goes to `stderr`
+- Return value-like output goes to `stdout`
